@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0imigwp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.5.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.1.0">
+  <bpmn:process id="AtmzAddUser" name="AtmzAddUser" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0ud8bl2</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0ud8bl2" sourceRef="StartEvent_1" targetRef="ActivityTaskCheckKey" />
+    <bpmn:exclusiveGateway id="GatewayUserFound" name="UserFound?" default="FlowNoUserFound">
+      <bpmn:incoming>FlowCheckKeyOk</bpmn:incoming>
+      <bpmn:outgoing>FlowNoUserFound</bpmn:outgoing>
+      <bpmn:outgoing>FlowUserExists</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1g82wvi" sourceRef="ActivityTaskCheckKey" targetRef="Gateway_0atrc9u" />
+    <bpmn:sequenceFlow id="FlowNoUserFound" name="NoUserFound" sourceRef="GatewayUserFound" targetRef="ActivityTaskAddUser" />
+    <bpmn:endEvent id="EventOk" name="Ok">
+      <bpmn:incoming>Flow_0o4uu8w</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ActivityTaskCheckKey" name="CheckKey">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="checkKey" retries="5" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ud8bl2</bpmn:incoming>
+      <bpmn:outgoing>Flow_1g82wvi</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ActivityTaskAddUser" name="AddUser">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="addUser" retries="5" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>FlowNoUserFound</bpmn:incoming>
+      <bpmn:outgoing>Flow_1q26gr4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="FlowUserExists" name="UserExists" sourceRef="GatewayUserFound" targetRef="ActivityTaskResult">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=userExists = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1q26gr4" sourceRef="ActivityTaskAddUser" targetRef="Gateway_0ifghlh" />
+    <bpmn:serviceTask id="ActivityTaskResult" name="Result">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="result" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>FlowUserExists</bpmn:incoming>
+      <bpmn:incoming>FlowAddUserOk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0o4uu8w</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0x6c1ax</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0o4uu8w" sourceRef="ActivityTaskResult" targetRef="EventOk" />
+    <bpmn:exclusiveGateway id="Gateway_0atrc9u" default="FlowCheckKeyOk">
+      <bpmn:incoming>Flow_1g82wvi</bpmn:incoming>
+      <bpmn:outgoing>FlowCheckKeyOk</bpmn:outgoing>
+      <bpmn:outgoing>FlowCheckKeyFailed</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="FlowCheckKeyOk" name="CheckKeyOk" sourceRef="Gateway_0atrc9u" targetRef="GatewayUserFound" />
+    <bpmn:sequenceFlow id="FlowCheckKeyFailed" name="CheckKeyFailed" sourceRef="Gateway_0atrc9u" targetRef="ActityTaskErrorCheckKey">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=string length(error) &gt; 0</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="ActityTaskErrorCheckKey" name="Error">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="error" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>FlowCheckKeyFailed</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vaqjy7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1vaqjy7" sourceRef="ActityTaskErrorCheckKey" targetRef="EventErrorCheckKey" />
+    <bpmn:endEvent id="EventErrorCheckKey" name="ErrorCheckKey">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_1vaqjy7</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0ywd3sj" errorRef="Error_1i8jt3s" />
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_0ifghlh" default="FlowAddUserOk">
+      <bpmn:incoming>Flow_1q26gr4</bpmn:incoming>
+      <bpmn:outgoing>FlowAddUserOk</bpmn:outgoing>
+      <bpmn:outgoing>FlowAddUserFailed</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="FlowAddUserOk" name="AddUserOk" sourceRef="Gateway_0ifghlh" targetRef="ActivityTaskResult" />
+    <bpmn:serviceTask id="ActityTaskErrorAddUser" name="Error">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="error" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>FlowAddUserFailed</bpmn:incoming>
+      <bpmn:outgoing>Flow_073uxa6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="FlowAddUserFailed" name="AddUserFailed" sourceRef="Gateway_0ifghlh" targetRef="ActityTaskErrorAddUser">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=string length(error) &gt; 0</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_073uxa6" sourceRef="ActityTaskErrorAddUser" targetRef="EventErrorAddUser" />
+    <bpmn:endEvent id="EventErrorAddUser" name="ErrorAddUser">
+      <bpmn:incoming>Flow_073uxa6</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0x4zwxo" errorRef="Error_0uo44ma" />
+    </bpmn:endEvent>
+    <bpmn:subProcess id="Activity_1raep5m">
+      <bpmn:incoming>Flow_0x6c1ax</bpmn:incoming>
+      <bpmn:startEvent id="Event_1ivuhty">
+        <bpmn:outgoing>Flow_03de77d</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:task id="Activity_1qv84fo">
+        <bpmn:incoming>Flow_03de77d</bpmn:incoming>
+        <bpmn:outgoing>Flow_16yjqfl</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:sequenceFlow id="Flow_03de77d" sourceRef="Event_1ivuhty" targetRef="Activity_1qv84fo" />
+      <bpmn:endEvent id="Event_1ezit8n">
+        <bpmn:incoming>Flow_16yjqfl</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_16yjqfl" sourceRef="Activity_1qv84fo" targetRef="Event_1ezit8n" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_0x6c1ax" sourceRef="ActivityTaskResult" targetRef="Activity_1raep5m" />
+  </bpmn:process>
+  <bpmn:error id="Error_1i8jt3s" name="ErrorCheckKey" errorCode="500" />
+  <bpmn:error id="Error_0uo44ma" name="ErrorAddUser" errorCode="500" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="AtmzAddUser">
+      <bpmndi:BPMNShape id="Gateway_1kfl4ql_di" bpmnElement="GatewayUserFound" isMarkerVisible="true">
+        <dc:Bounds x="645" y="275" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="641" y="332" width="61" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0p04bn8_di" bpmnElement="EventOk">
+        <dc:Bounds x="1342" y="282" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1353" y="325" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_138fdiq_di" bpmnElement="EventErrorAddUser">
+        <dc:Bounds x="1342" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1326" y="145" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_19740q4" bpmnElement="ActityTaskErrorAddUser">
+        <dc:Bounds x="1120" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02tkjnb_di" bpmnElement="ActityTaskErrorCheckKey">
+        <dc:Bounds x="620" y="420" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0o13389_di" bpmnElement="EventErrorCheckKey">
+        <dc:Bounds x="832" y="442" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="814" y="485" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0qpctq7_di" bpmnElement="ActivityTaskCheckKey">
+        <dc:Bounds x="270" y="260" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="142" y="282" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0d674hi_di" bpmnElement="ActivityTaskAddUser">
+        <dc:Bounds x="760" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0ifghlh_di" bpmnElement="Gateway_0ifghlh" isMarkerVisible="true">
+        <dc:Bounds x="955" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11zhx9l_di" bpmnElement="ActivityTaskResult">
+        <dc:Bounds x="930" y="260" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0atrc9u_di" bpmnElement="Gateway_0atrc9u" isMarkerVisible="true">
+        <dc:Bounds x="475" y="275" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1raep5m_di" bpmnElement="Activity_1raep5m" isExpanded="true">
+        <dc:Bounds x="995" y="450" width="350" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ivuhty_di" bpmnElement="Event_1ivuhty">
+        <dc:Bounds x="1035" y="532" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qv84fo_di" bpmnElement="Activity_1qv84fo">
+        <dc:Bounds x="1125" y="510" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ezit8n_di" bpmnElement="Event_1ezit8n">
+        <dc:Bounds x="1287" y="532" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_03de77d_di" bpmnElement="Flow_03de77d">
+        <di:waypoint x="1071" y="550" />
+        <di:waypoint x="1125" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_16yjqfl_di" bpmnElement="Flow_16yjqfl">
+        <di:waypoint x="1225" y="550" />
+        <di:waypoint x="1287" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o4uu8w_di" bpmnElement="Flow_0o4uu8w">
+        <di:waypoint x="1030" y="300" />
+        <di:waypoint x="1342" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1q26gr4_di" bpmnElement="Flow_1q26gr4">
+        <di:waypoint x="860" y="120" />
+        <di:waypoint x="955" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06yw8g3_di" bpmnElement="FlowUserExists">
+        <di:waypoint x="695" y="300" />
+        <di:waypoint x="930" y="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="788" y="282" width="53" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0i74cjh_di" bpmnElement="FlowCheckKeyOk">
+        <di:waypoint x="525" y="300" />
+        <di:waypoint x="645" y="300" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="553" y="282" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qchsl9_di" bpmnElement="FlowNoUserFound">
+        <di:waypoint x="670" y="275" />
+        <di:waypoint x="670" y="120" />
+        <di:waypoint x="760" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="651" y="195" width="69" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ud8bl2_di" bpmnElement="Flow_0ud8bl2">
+        <di:waypoint x="178" y="300" />
+        <di:waypoint x="270" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1g82wvi_di" bpmnElement="Flow_1g82wvi">
+        <di:waypoint x="370" y="300" />
+        <di:waypoint x="475" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1q02zod_di" bpmnElement="FlowCheckKeyFailed">
+        <di:waypoint x="500" y="325" />
+        <di:waypoint x="500" y="460" />
+        <di:waypoint x="620" y="460" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="475" y="396" width="81" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vaqjy7_di" bpmnElement="Flow_1vaqjy7">
+        <di:waypoint x="720" y="460" />
+        <di:waypoint x="832" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1yszz7q_di" bpmnElement="FlowAddUserOk">
+        <di:waypoint x="980" y="145" />
+        <di:waypoint x="980" y="260" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="967" y="199" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0novkw0_di" bpmnElement="FlowAddUserFailed">
+        <di:waypoint x="1005" y="120" />
+        <di:waypoint x="1120" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1027" y="104" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_073uxa6_di" bpmnElement="Flow_073uxa6">
+        <di:waypoint x="1220" y="120" />
+        <di:waypoint x="1342" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0x6c1ax_di" bpmnElement="Flow_0x6c1ax">
+        <di:waypoint x="980" y="340" />
+        <di:waypoint x="980" y="395" />
+        <di:waypoint x="1170" y="395" />
+        <di:waypoint x="1170" y="450" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
