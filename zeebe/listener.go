@@ -1,7 +1,6 @@
 package zeebe
 
 import (
-	"github.com/camunda-cloud/zeebe/clients/go/pkg/entities"
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/worker"
 	"github.com/camunda-cloud/zeebe/clients/go/pkg/zbc"
 	"os"
@@ -10,7 +9,7 @@ import (
 )
 
 type Listener interface {
-	AddHandler(task string, handler interface{})
+	AddHandler(string, worker.JobHandler)
 	Listen()
 }
 
@@ -25,12 +24,8 @@ func NewListener(client zbc.Client) Listener {
 	}
 }
 
-func (l *listener) AddHandler(task string, handler interface{}) {
-	f, ok := handler.(func(worker.JobClient, entities.Job))
-	if !ok {
-		panic("wrong handler type")
-	}
-	l.handlers = append(l.handlers, l.client.NewJobWorker().JobType(task).Handler(f).Open())
+func (l *listener) AddHandler(task string, handler worker.JobHandler) {
+	l.handlers = append(l.handlers, l.client.NewJobWorker().JobType(task).Handler(handler).Open())
 }
 
 func (l *listener) Listen() {
