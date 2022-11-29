@@ -12,7 +12,7 @@
       <bpmn:incoming>Flow_06kr7sc</bpmn:incoming>
       <bpmn:outgoing>Flow_1vaqjy7</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="Flow_1vaqjy7" sourceRef="TaskErrorCheckKey" targetRef="EventErrorCheckKey" />
+    <bpmn:sequenceFlow id="Flow_1vaqjy7" sourceRef="TaskErrorCheckKey" targetRef="EndEventErrorCheckKey" />
     <bpmn:subProcess id="ActivityCheckKey" name="Check if the Key Already Registered">
       <bpmn:incoming>Flow_0ud8bl2</bpmn:incoming>
       <bpmn:serviceTask id="TaskCheckKey" name="CheckKey">
@@ -35,7 +35,7 @@
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="Flow_0fmbrqf" sourceRef="TaskCheckKey" targetRef="EventPublishMessageCheckKey" />
     </bpmn:subProcess>
-    <bpmn:endEvent id="EventErrorCheckKey">
+    <bpmn:endEvent id="EndEventErrorCheckKey">
       <bpmn:incoming>Flow_1vaqjy7</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:serviceTask id="TaskResultCheckKey" name="Result">
@@ -45,10 +45,10 @@
       <bpmn:incoming>Flow_0ce5wh6</bpmn:incoming>
       <bpmn:outgoing>Flow_0mqmum9</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="Event_0i1uvui">
+    <bpmn:endEvent id="EndEventAlreadyExists">
       <bpmn:incoming>Flow_0mqmum9</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0mqmum9" sourceRef="TaskResultCheckKey" targetRef="Event_0i1uvui" />
+    <bpmn:sequenceFlow id="Flow_0mqmum9" sourceRef="TaskResultCheckKey" targetRef="EndEventAlreadyExists" />
     <bpmn:subProcess id="ActivityAddUser" name="Add new User Key to the Ledger">
       <bpmn:incoming>Flow_1onlyoc</bpmn:incoming>
       <bpmn:startEvent id="EventStartAddUser">
@@ -96,7 +96,7 @@
       <bpmn:messageEventDefinition id="MessageEventDefinition_1buot2x" messageRef="Message_3986u09" />
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_1onlyoc" sourceRef="EventUserNotFound" targetRef="ActivityAddUser" />
-    <bpmn:boundaryEvent id="Event_00r7wt3" attachedToRef="ActivityAddUser">
+    <bpmn:boundaryEvent id="EventErrorAddUser" attachedToRef="ActivityAddUser">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
           <zeebe:output source="=&#34;failed adding user key&#34;" target="error" />
@@ -112,11 +112,8 @@
       <bpmn:incoming>Flow_0bvefw0</bpmn:incoming>
       <bpmn:outgoing>Flow_06mnbfx</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="Event_1vgqj3p">
-      <bpmn:incoming>Flow_06mnbfx</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_06mnbfx" sourceRef="Activity_15en7c2" targetRef="Event_1vgqj3p" />
-    <bpmn:sequenceFlow id="Flow_0bvefw0" sourceRef="Event_00r7wt3" targetRef="Activity_15en7c2" />
+    <bpmn:sequenceFlow id="Flow_06mnbfx" sourceRef="Activity_15en7c2" targetRef="EndEventAddUser" />
+    <bpmn:sequenceFlow id="Flow_0bvefw0" sourceRef="EventErrorAddUser" targetRef="Activity_15en7c2" />
     <bpmn:boundaryEvent id="EventUserAdded" attachedToRef="ActivityAddUser">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
@@ -133,11 +130,14 @@
       <bpmn:incoming>Flow_1r33x5l</bpmn:incoming>
       <bpmn:outgoing>Flow_0v7i08v</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:endEvent id="Event_0uuodhn">
+    <bpmn:endEvent id="EndEventUserAdded">
       <bpmn:incoming>Flow_0v7i08v</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0v7i08v" sourceRef="Activity_041qbxf" targetRef="Event_0uuodhn" />
+    <bpmn:sequenceFlow id="Flow_0v7i08v" sourceRef="Activity_041qbxf" targetRef="EndEventUserAdded" />
     <bpmn:sequenceFlow id="Flow_1r33x5l" sourceRef="EventUserAdded" targetRef="Activity_041qbxf" />
+    <bpmn:endEvent id="EndEventAddUser">
+      <bpmn:incoming>Flow_06mnbfx</bpmn:incoming>
+    </bpmn:endEvent>
   </bpmn:process>
   <bpmn:error id="Error_1i8jt3s" name="ErrorCheckKey" errorCode="ErrorCheckKey" />
   <bpmn:error id="Error_0uo44ma" name="ErrorAddUser" errorCode="ErrorAddUser" />
@@ -166,13 +166,13 @@
       <bpmndi:BPMNShape id="BPMNShape_1yuwajw" bpmnElement="TaskResultCheckKey">
         <dc:Bounds x="530" y="390" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0i1uvui_di" bpmnElement="Event_0i1uvui">
+      <bpmndi:BPMNShape id="Event_0i1uvui_di" bpmnElement="EndEventAlreadyExists">
         <dc:Bounds x="562" y="532" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_02tkjnb_di" bpmnElement="TaskErrorCheckKey">
         <dc:Bounds x="340" y="390" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0w3apm8_di" bpmnElement="EventErrorCheckKey">
+      <bpmndi:BPMNShape id="Event_0w3apm8_di" bpmnElement="EndEventErrorCheckKey">
         <dc:Bounds x="372" y="532" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="522" y="718" width="75" height="14" />
@@ -181,7 +181,7 @@
       <bpmndi:BPMNShape id="BPMNShape_1wzve15" bpmnElement="Activity_15en7c2">
         <dc:Bounds x="840" y="390" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_02mf90f" bpmnElement="Event_1vgqj3p">
+      <bpmndi:BPMNShape id="BPMNShape_02mf90f" bpmnElement="EndEventAddUser">
         <dc:Bounds x="872" y="532" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="522" y="718" width="75" height="14" />
@@ -190,7 +190,7 @@
       <bpmndi:BPMNShape id="BPMNShape_1ia200r" bpmnElement="Activity_041qbxf">
         <dc:Bounds x="1010" y="390" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_03uuooa" bpmnElement="Event_0uuodhn">
+      <bpmndi:BPMNShape id="BPMNShape_03uuooa" bpmnElement="EndEventUserAdded">
         <dc:Bounds x="1042" y="532" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_12v13z2_di" bpmnElement="ActivityCheckKey" isExpanded="true">
@@ -244,7 +244,7 @@
       <bpmndi:BPMNShape id="Event_1ispg09_di" bpmnElement="EventUserNotFound">
         <dc:Bounds x="672" y="177" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0akwrsc_di" bpmnElement="Event_00r7wt3">
+      <bpmndi:BPMNShape id="Event_0akwrsc_di" bpmnElement="EventErrorAddUser">
         <dc:Bounds x="872" y="292" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0ix9aua_di" bpmnElement="EventUserAdded">
